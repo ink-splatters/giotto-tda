@@ -8,7 +8,7 @@ import sys
 import platform
 import subprocess
 
-from pkg_resources.extern.packaging import version
+from packaging import version
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 
@@ -129,7 +129,7 @@ class CMakeBuild(build_ext):
             build_args += ["--", "/m"]
         else:
             cmake_args += [f"-DCMAKE_BUILD_TYPE={cfg}"]
-            build_args += ["--", "-j2"]
+            build_args += ["--", "-j8"]
 
         if sys.platform.startswith("darwin"):
             # Cross-compile support for macOS - respect ARCHFLAGS if set
@@ -141,6 +141,8 @@ class CMakeBuild(build_ext):
         env = os.environ.copy()
         env["CXXFLAGS"] = f"{env.get('CXXFLAGS', '')} -DVERSION_INFO="\
                           f"\\'{self.distribution.get_version()}\\'"
+        cmake_args += ["-GNinja"]
+
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         subprocess.check_call(["cmake", ext.sourcedir] + cmake_args,
